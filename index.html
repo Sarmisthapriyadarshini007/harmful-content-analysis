@@ -30,7 +30,18 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Video Modal -->
+    <div id="videoModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center;">
+        <div style="position: relative; width: 90%; max-width: 800px; background: #000; border-radius: 8px; overflow: hidden;">
+            <button onclick="document.getElementById('videoModal').style.display='none'; document.getElementById('demoVideo').pause();" style="position: absolute; right: 10px; top: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 1001;">&times;</button>
+            <video id="demoVideo" controls style="width: 100%; height: auto; max-height: 80vh; display: block;">
+                <source src="assets/demo_video.mp4" type="video/mp4">
+                Your browser does not support HTML5 video.
+            </video>
+        </div>
+    </div>
+
+    <!-- Scroll to Top Button -->
     <header class="hero">
         <div class="container hero-container">
             <div class="hero-content animate-fade-in-up">
@@ -39,7 +50,7 @@
                     speech, spam, and misleading content in real-time across your YouTube channel.</p>
                 <div class="hero-buttons-stacked">
                     <a href="register.html" class="btn-ref-primary">Start for free</a>
-                    <a href="#" class="btn-ref-outline">
+                    <a href="#" class="btn-ref-outline" onclick="document.getElementById('videoModal').style.display='flex'; return false;">
                         Watch video
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M8 5v14l11-7z"/>

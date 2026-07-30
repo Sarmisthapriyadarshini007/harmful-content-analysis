@@ -1,0 +1,239 @@
+/* workflow.css - Custom styles for the AI Workflow Page */
+
+.workflow-container {
+    padding: 2rem 0;
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.workflow-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 4rem;
+}
+
+/* Connecting Arrow */
+.workflow-stage::after {
+    content: '';
+    position: absolute;
+    bottom: -3.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 3rem;
+    background: linear-gradient(to bottom, var(--primary), rgba(14, 165, 233, 0.2));
+    z-index: 0;
+}
+
+/* The actual arrowhead */
+.workflow-stage::before {
+    content: '';
+    position: absolute;
+    bottom: -4rem;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid rgba(14, 165, 233, 0.5);
+    border-bottom: 2px solid rgba(14, 165, 233, 0.5);
+    z-index: 0;
+}
+
+.workflow-stage:last-child::after,
+.workflow-stage:last-child::before,
+.workflow-branch-container::after,
+.workflow-branch-container::before {
+    display: none; /* Hide arrow after last stage */
+}
+
+.flow-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2.5rem;
+    min-width: 280px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    z-index: 1;
+    transition: var(--transition);
+    animation: fadeUp 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.flow-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(14, 165, 233, 0.15);
+    border-color: var(--primary);
+}
+
+.flow-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+}
+
+.flow-title {
+    font-weight: 700;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.flow-desc {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Branches for AI Models */
+.workflow-branches {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-top: 1rem;
+    position: relative;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+/* Connector from main to branches */
+.branch-connector-top {
+    position: absolute;
+    top: -2rem;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary) 20%, var(--primary) 80%, transparent);
+}
+
+/* Connector from branches back to main */
+.branch-connector-bottom {
+    position: absolute;
+    bottom: -2rem;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary) 20%, var(--primary) 80%, transparent);
+}
+
+.workflow-branch-container {
+    position: relative;
+    margin-bottom: 4rem;
+}
+
+/* Branch individual cards */
+.branch-card {
+    min-width: 200px;
+    max-width: 220px;
+    flex: 1;
+}
+
+.branch-card::before {
+    content: '';
+    position: absolute;
+    top: -2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 2rem;
+    background: var(--primary);
+}
+
+.branch-card::after {
+    content: '';
+    position: absolute;
+    bottom: -2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 2.5rem;
+    background: var(--primary);
+}
+
+.branch-card .flow-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+}
+
+/* Merging step connector */
+.workflow-merge {
+    margin-top: 2rem;
+}
+.workflow-merge::before {
+    content: '';
+    position: absolute;
+    top: -3.5rem;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid rgba(124, 58, 237, 0.5);
+    border-bottom: 2px solid rgba(124, 58, 237, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .branch-card {
+        min-width: 40%;
+    }
+}
+
+@media (max-width: 768px) {
+    .workflow-branches {
+        flex-direction: column;
+        align-items: center;
+        gap: 3rem;
+    }
+    .branch-card {
+        width: 100%;
+        max-width: 320px;
+    }
+    .branch-connector-top, .branch-connector-bottom {
+        display: none;
+    }
+    .branch-card::before, .branch-card::after {
+        display: none;
+    }
+    
+    /* Simulate normal vertical arrows for branches on mobile */
+    .branch-card.flow-card::after {
+        content: '';
+        position: absolute;
+        bottom: -2.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 2rem;
+        background: linear-gradient(to bottom, var(--primary), rgba(124, 58, 237, 0.2));
+        display: block;
+    }
+    
+    .branch-card.flow-card:last-child::after {
+        height: 3rem;
+        bottom: -3.5rem;
+    }
+}
+
+/* Animation Delays */
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.5s; }
+.delay-4 { animation-delay: 0.7s; }
+.delay-5 { animation-delay: 0.8s; }
+.delay-6 { animation-delay: 0.9s; }
+.delay-7 { animation-delay: 1.0s; }
+.delay-8 { animation-delay: 1.1s; }

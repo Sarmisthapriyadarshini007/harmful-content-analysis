@@ -3,25 +3,18 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('http://localhost:3000/api/stats')
         .then(res => res.json())
         .then(data => {
-            // Base values (smaller so judge doesn't doubt)
-            const baseTotalScanned = 1250;
-            const baseToxicity = 4.2;
-            const baseSpam = 2.1;
+            // Use only actual db stats
+            const totalScanned = data.totalComments || 0;
+            const avgTox = data.avgToxicity || 0;
+            const avgSpam = data.avgSpam || 0;
             
-            // Add actual db stats
-            const realCount = data.totalComments || 0;
-            const realTox = data.avgToxicity || 0;
-            const realSpam = data.avgSpam || 0;
-            
-            // Blend them
-            const totalScanned = baseTotalScanned + realCount;
-            
-            // Weighted average for percentages
-            const avgTox = ((baseToxicity * baseTotalScanned) + (realTox * realCount)) / totalScanned;
-            const avgSpam = ((baseSpam * baseTotalScanned) + (realSpam * realCount)) / totalScanned;
-            
-            // Health score (100 - avgTox - avgSpam)
-            const healthScore = Math.max(0, Math.round(100 - avgTox - avgSpam));
+            // Health score (100 - avgTox - avgSpam, default 100 if no data)
+            let healthScore = 100;
+            if (totalScanned > 0) {
+                healthScore = Math.max(0, Math.round(100 - avgTox - avgSpam));
+            } else {
+                healthScore = 0; // Or whatever makes sense for 0 scanned. Let's say 0 to signify no data
+            }
             
             // Update DOM data-targets
             const healthEl = document.querySelector('.stat-card.health-score .value');
@@ -40,18 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(err => {
             console.error('Failed to load real stats:', err);
-            // Fallback to initial base values
+            // Fallback to 0 if failed
             const healthEl = document.querySelector('.stat-card.health-score .value');
-            if (healthEl) healthEl.setAttribute('data-target', 94);
+            if (healthEl) healthEl.setAttribute('data-target', 0);
             
             const totalEl = document.querySelectorAll('.stat-card .value')[1];
-            if (totalEl) totalEl.setAttribute('data-target', 1250);
+            if (totalEl) totalEl.setAttribute('data-target', 0);
             
             const toxEl = document.querySelector('.stat-card.toxicity-avg .value');
-            if (toxEl) toxEl.setAttribute('data-target', 4.2);
+            if (toxEl) toxEl.setAttribute('data-target', 0);
             
             const spamEl = document.querySelectorAll('.stat-card .value')[3];
-            if (spamEl) spamEl.setAttribute('data-target', 2.1);
+            if (spamEl) spamEl.setAttribute('data-target', 0);
             
             runCounters();
         });

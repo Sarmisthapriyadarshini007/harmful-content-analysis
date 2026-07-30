@@ -732,6 +732,29 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
+app.get('/api/export', (req, res) => {
+    db.all('SELECT * FROM analyzed_comments', (err, rows) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'DB error' });
+        }
+        if (rows.length === 0) {
+            return res.status(404).send('No data available');
+        }
+        
+        // Convert to CSV
+        const fields = Object.keys(rows[0]);
+        const csv = [
+            fields.join(','),
+            ...rows.map(row => fields.map(f => JSON.stringify(row[f] || '')).join(','))
+        ].join('\\n');
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="SafeTubeAI_Report.csv"');
+        res.send(csv);
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
 });

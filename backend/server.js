@@ -716,6 +716,22 @@ app.post('/api/comments/analyze', async (req, res) => {
     }
 });
 
+
+app.get('/api/stats', (req, res) => {
+    db.all('SELECT COUNT(*) as totalComments, AVG(toxic_percentage) as avgToxicity, AVG(spam) as avgSpam FROM analyzed_comments', (err, rows) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'DB error' });
+        }
+        const data = rows[0] || { totalComments: 0, avgToxicity: 0, avgSpam: 0 };
+        res.json({
+            totalComments: data.totalComments || 0,
+            avgToxicity: data.avgToxicity || 0,
+            avgSpam: data.avgSpam || 0
+        });
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
 });

@@ -75,6 +75,37 @@ const db = new sqlite3.Database(dbPath, (err) => {
             }
         });
     }
+
+    // Create analyzed_comments table for real-time comment analysis
+    db.run(`
+        CREATE TABLE IF NOT EXISTS analyzed_comments (
+            id TEXT PRIMARY KEY,
+            video_id TEXT NOT NULL,
+            author_name TEXT,
+            author_profile_url TEXT,
+            text TEXT,
+            published_at TEXT,
+            like_count INTEGER,
+            reply_count INTEGER,
+            
+            language TEXT,
+            sentiment TEXT,
+            toxic_percentage INTEGER,
+            spam INTEGER,
+            hate INTEGER,
+            harassment INTEGER,
+            profanity INTEGER,
+            threat INTEGER,
+            confidence INTEGER,
+            recommended_action TEXT,
+            
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `, (err) => {
+        if (err) {
+            console.error('Error creating analyzed_comments table', err);
+        }
+    });
 });
 
 module.exports = db;

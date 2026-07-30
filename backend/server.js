@@ -526,6 +526,196 @@ app.get('/api/channel-insights', (req, res) => {
     });
 });
 
+// ==========================================
+// 🚀 DYNAMIC COMMENT ANALYSIS ENDPOINT
+// ==========================================
+app.post('/api/comments/analyze', async (req, res) => {
+    try {
+        const { url, pageToken } = req.body;
+        if (!url) return res.status(400).json({ error: 'YouTube URL is required' });
+
+        const videoId = extractVideoId(url);
+        if (!videoId) return res.status(400).json({ error: 'Invalid YouTube URL' });
+
+        if (!youtube) return res.status(500).json({ error: 'YouTube API key is missing.' });
+        
+        console.log(`[Comment Analysis] Fetching comments for ${videoId}, pageToken: ${pageToken || 'none'}`);
+        
+        // 1. Fetch comments from YouTube API
+        let commentRes;
+        try {
+            commentRes = await youtube.commentThreads.list({
+                part: 'snippet',
+                videoId: videoId,
+                maxResults: 20, // 20 at a time to stay under Gemini token limits for batching
+                order: 'relevance',
+                pageToken: pageToken || undefined
+            });
+        } catch (err) {
+            console.error('[YouTube API Error]', err.message);
+            if (err.message.includes('disabled')) {
+                return res.status(403).json({ error: 'Comments are disabled for this video.' });
+            }
+            return res.status(500).json({ error: 'Failed to fetch comments from YouTube.' });
+        }
+
+        const items = commentRes.data.items || [];
+        const nextToken = commentRes.data.nextPageToken || null;
+
+        if (items.length === 0) {
+            return res.json({ comments: [], nextPageToken: null });
+        }
+
+        const fetchedComments = items.map(item => {
+            const c = item.snippet.topLevelComment.snippet;
+            return {
+                id: item.id,
+                video_id: videoId,
+                author_name: c.authorDisplayName,
+                author_profile_url: c.authorProfileImageUrl,
+                text: c.textDisplay,
+                published_at: c.publishedAt,
+                like_count: c.likeCount || 0,
+                reply_count: item.snippet.totalReplyCount || 0
+            };
+        });
+
+        // 2. Check Database for existing analysis
+        const commentIds = fetchedComments.map(c => c.id);
+        const placeholders = commentIds.map(() => '?').join(',');
+        
+        db.all(`SELECT * FROM analyzed_comments WHERE id IN (${placeholders})`, commentIds, async (err, rows) => {
+            if (err) {
+                console.error('[DB Error]', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+
+            const existingMap = {};
+            rows.forEach(r => existingMap[r.id] = r);
+
+            const commentsToAnalyze = fetchedComments.filter(c => !existingMap[c.id]);
+            const finalComments = [];
+
+            // Add existing to final
+            fetchedComments.forEach(c => {
+                if (existingMap[c.id]) {
+                    finalComments.push(existingMap[c.id]);
+                }
+            });
+
+            // 3. Batch Analyze new comments with Gemini
+            if (commentsToAnalyze.length > 0 && ai) {
+                console.log(`[Gemini API] Analyzing ${commentsToAnalyze.length} new comments...`);
+                
+                let geminiModelName = 'gemini-2.5-flash'; 
+                try {
+                    const modelsResponse = await ai.models.list();
+                    const availableModels = [];
+                    for await (const m of modelsResponse) { availableModels.push(m.name.replace('models/', '')); }
+                    if (availableModels.includes('gemini-3.5-flash-lite')) { geminiModelName = 'gemini-3.5-flash-lite'; }
+                    else if (availableModels.includes('gemini-2.5-flash')) { geminiModelName = 'gemini-2.5-flash'; }
+                } catch (e) {}
+
+                const prompt = `
+                Analyze these ${commentsToAnalyze.length} YouTube comments for safety, toxicity, and sentiment.
+                Return ONLY a valid JSON array of objects. No markdown, no backticks, no markdown codeblocks. Just the raw JSON array.
+                Each object MUST contain EXACTLY these keys:
+                - "id": (The exact ID provided)
+                - "language": (2 letter code like EN, ES, HI)
+                - "sentiment": (Positive, Neutral, or Negative)
+                - "toxic_percentage": <integer 0-100>
+                - "spam": <integer 0-100>
+                - "hate": <integer 0-100>
+                - "harassment": <integer 0-100>
+                - "profanity": <integer 0-100>
+                - "threat": <integer 0-100>
+                - "confidence": <integer 0-100>
+                
+                Comments to analyze:
+                ${JSON.stringify(commentsToAnalyze.map(c => ({ id: c.id, text: c.text })))}
+                `;
+
+                try {
+                    const aiResponse = await ai.models.generateContent({
+                        model: geminiModelName,
+                        contents: prompt,
+                    });
+                    
+                    let aiText = aiResponse.text.trim().replace(/```json/g, '').replace(/```/g, '').trim();
+                    const analysisResults = JSON.parse(aiText);
+
+                    // 4. Determine Action & Save to DB
+                    const insertStmt = db.prepare(`
+                        INSERT INTO analyzed_comments 
+                        (id, video_id, author_name, author_profile_url, text, published_at, like_count, reply_count, 
+                        language, sentiment, toxic_percentage, spam, hate, harassment, profanity, threat, confidence, recommended_action)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `);
+
+                    analysisResults.forEach(result => {
+                        const original = commentsToAnalyze.find(c => c.id === result.id);
+                        if (!original) return;
+
+                        // Calculate Recommendation logic
+                        let action = 'Approve';
+                        const maxRisk = Math.max(result.toxic_percentage || 0, result.spam || 0, result.hate || 0, result.harassment || 0, result.threat || 0);
+                        
+                        if (result.threat > 70 || result.hate > 80 || result.spam > 90) {
+                            action = 'Hide & Block User';
+                        } else if (maxRisk > 60) {
+                            action = 'Delete';
+                        } else if (maxRisk > 40 || result.profanity > 50) {
+                            action = 'Hide';
+                        }
+
+                        const fullData = {
+                            ...original,
+                            ...result,
+                            recommended_action: action
+                        };
+                        finalComments.push(fullData);
+
+                        insertStmt.run([
+                            fullData.id, fullData.video_id, fullData.author_name, fullData.author_profile_url, 
+                            fullData.text, fullData.published_at, fullData.like_count, fullData.reply_count,
+                            fullData.language || 'EN', fullData.sentiment || 'Neutral', 
+                            fullData.toxic_percentage || 0, fullData.spam || 0, fullData.hate || 0, 
+                            fullData.harassment || 0, fullData.profanity || 0, fullData.threat || 0, 
+                            fullData.confidence || 95, action
+                        ]);
+                    });
+                    insertStmt.finalize();
+                    console.log(`[DB] Saved ${analysisResults.length} new comments to database.`);
+
+                } catch (aiErr) {
+                    console.error('[Gemini Analysis Error]', aiErr.message);
+                    // Fallback if AI fails
+                    commentsToAnalyze.forEach(c => {
+                        finalComments.push({
+                            ...c,
+                            language: 'EN', sentiment: 'Neutral', toxic_percentage: 0, spam: 0, hate: 0,
+                            harassment: 0, profanity: 0, threat: 0, confidence: 0, recommended_action: 'Approve'
+                        });
+                    });
+                }
+            }
+
+            // Restore original relevance sorting from YouTube
+            finalComments.sort((a, b) => {
+                const idxA = fetchedComments.findIndex(c => c.id === a.id);
+                const idxB = fetchedComments.findIndex(c => c.id === b.id);
+                return idxA - idxB;
+            });
+
+            res.json({ comments: finalComments, nextPageToken: nextToken });
+        });
+
+    } catch (error) {
+        console.error('[Comment Analysis Route Error]', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
 });

@@ -120,46 +120,46 @@ document.addEventListener('DOMContentLoaded', () => {
             let timeAgo = c.published_at ? new Date(c.published_at).toLocaleString() : 'Unknown date';
 
             const card = document.createElement('div');
-            card.className = \`comment-card animate-fade-up\`;
-            card.innerHTML = \`
+            card.className = `comment-card animate-fade-up`;
+            card.innerHTML = `
                 <div class="comment-header">
-                    <img class="user-avatar" src="\${c.author_profile_url || 'https://via.placeholder.com/40'}" alt="Avatar" style="background: none; object-fit: cover;">
+                    <img class="user-avatar" src="${c.author_profile_url || 'https://via.placeholder.com/40'}" alt="Avatar" style="background: none; object-fit: cover;">
                     <div class="user-info">
-                        <h4>\${c.author_name || 'Unknown'}</h4>
-                        <span>\${timeAgo}</span>
+                        <h4>${c.author_name || 'Unknown'}</h4>
+                        <span>${timeAgo}</span>
                     </div>
                 </div>
                 
                 <div class="comment-text">
-                    \${c.text || ''}
+                    ${c.text || ''}
                 </div>
                 
                 <div class="comment-tags">
-                    <span class="tag tag-lang">\${c.language || 'EN'}</span>
-                    <span class="tag \${sentClass}">\${c.sentiment || 'Neutral'}</span>
+                    <span class="tag tag-lang">${c.language || 'EN'}</span>
+                    <span class="tag ${sentClass}">${c.sentiment || 'Neutral'}</span>
                 </div>
 
                 <div class="ai-stats">
-                    <div class="stat-box \${toxClass}">
+                    <div class="stat-box ${toxClass}">
                         <div class="stat-label">Toxicity</div>
-                        <div class="stat-num">\${c.toxic_percentage || 0}%</div>
+                        <div class="stat-num">${c.toxic_percentage || 0}%</div>
                     </div>
-                    <div class="stat-box \${spamClass}">
+                    <div class="stat-box ${spamClass}">
                         <div class="stat-label">Spam</div>
-                        <div class="stat-num">\${c.spam || 0}%</div>
+                        <div class="stat-num">${c.spam || 0}%</div>
                     </div>
-                    <div class="stat-box \${hateClass}">
+                    <div class="stat-box ${hateClass}">
                         <div class="stat-label">Hate</div>
-                        <div class="stat-num">\${c.hate || 0}%</div>
+                        <div class="stat-num">${c.hate || 0}%</div>
                     </div>
                     <div class="stat-box low-risk">
                         <div class="stat-label">Conf</div>
-                        <div class="stat-num">\${c.confidence || 95}%</div>
+                        <div class="stat-num">${c.confidence || 95}%</div>
                     </div>
                 </div>
 
-                <div class="recommended-box \${recClass}">
-                    \${actionHtml}
+                <div class="recommended-box ${recClass}">
+                    ${actionHtml}
                 </div>
 
                 <div class="card-actions">
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg> Report
                     </button>
                 </div>
-            \`;
+            `;
             commentsGrid.appendChild(card);
             
             // Add interaction to buttons

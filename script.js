@@ -74,4 +74,33 @@ document.addEventListener('DOMContentLoaded', () => {
             navbar.style.boxShadow = 'none';
         }
     });
+
+    // 4. Welcome Popup Modal (Show instantly on page load)
+    const popupOverlay = document.getElementById('safetubePopup');
+    if (popupOverlay) {
+        const popupCloseBtn = document.getElementById('safetubePopupClose');
+        
+        const closePopup = () => {
+            popupOverlay.classList.remove('active');
+        };
+
+        // Show instantly (100ms delay to allow CSS transitions to trigger smoothly)
+        setTimeout(() => {
+            popupOverlay.classList.add('active');
+        }, 100);
+
+        popupCloseBtn.addEventListener('click', closePopup);
+        
+        popupOverlay.addEventListener('click', (e) => {
+            if (e.target === popupOverlay) {
+                closePopup();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && popupOverlay.classList.contains('active')) {
+                closePopup();
+            }
+        });
+    }
 });

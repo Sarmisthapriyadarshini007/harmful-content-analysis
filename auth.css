@@ -28,7 +28,9 @@ body {
     justify-content: center;
     background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 2rem 0;
 }
 
 a {
@@ -231,6 +233,35 @@ a:hover {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
     background: rgba(30, 41, 59, 1);
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    padding: 0;
+}
+
+.password-toggle:hover {
+    color: var(--primary);
+}
+
+.password-toggle svg {
+    width: 20px;
+    height: 20px;
 }
 
 .back-link {

@@ -186,8 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const compactLayoutToggle = document.getElementById('compactLayoutToggle');
 
     // Load preferences
-    if (localStorage.getItem('safetube_dark_mode') === 'true') {
-        document.body.classList.add('dark-mode');
+    // Default is dark mode. If explicitly false, apply light mode.
+    if (localStorage.getItem('safetube_dark_mode') === 'false') {
+        document.body.classList.add('light-mode');
+        if (darkModeToggle) darkModeToggle.checked = false;
+    } else {
+        document.body.classList.remove('light-mode');
         if (darkModeToggle) darkModeToggle.checked = true;
     }
     
@@ -200,10 +204,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (darkModeToggle) {
         darkModeToggle.addEventListener('change', (e) => {
             if (e.target.checked) {
-                document.body.classList.add('dark-mode');
+                document.body.classList.remove('light-mode');
                 localStorage.setItem('safetube_dark_mode', 'true');
             } else {
-                document.body.classList.remove('dark-mode');
+                document.body.classList.add('light-mode');
                 localStorage.setItem('safetube_dark_mode', 'false');
             }
         });

@@ -185,7 +185,7 @@ a:hover {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(15, 23, 42, 0.4);
 }
 
 .auth-header {
@@ -218,8 +218,9 @@ a:hover {
     width: 100%;
     padding: 0.875rem 1rem;
     border-radius: 12px;
-    border: 1px solid rgba(0,0,0,0.1);
-    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(30, 41, 59, 0.8);
+    color: var(--text-main);
     font-size: 1rem;
     font-family: inherit;
     transition: var(--transition);
@@ -228,8 +229,8 @@ a:hover {
 
 .form-input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+    background: rgba(30, 41, 59, 1);
 }
 
 .back-link {
@@ -318,9 +319,9 @@ a:hover {
 
 .btn-google {
     background-color: white;
-    color: var(--text-main);
-    border: 1px solid rgba(0,0,0,0.1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    color: #0f172a;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .btn-google:hover {

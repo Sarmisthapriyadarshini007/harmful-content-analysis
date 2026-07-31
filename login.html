@@ -133,6 +133,14 @@
                 localStorage.removeItem('safetube_remembered_email');
             }
 
+            // If the user logs in with a different email (or just to be safe for the mockup flow),
+            // we clear the old channel data so the 'Connect Channel' popup appears.
+            const previousEmail = localStorage.getItem('safetube_user_email');
+            if (previousEmail !== emailInput.value) {
+                localStorage.removeItem('safetube_channel_name');
+                localStorage.removeItem('safetube_user_name');
+            }
+
             // Always save email for profile usage
             localStorage.setItem('safetube_user_email', emailInput.value);
 
@@ -140,6 +148,8 @@
         });
 
         document.querySelector('.btn-google').addEventListener('click', function () {
+            localStorage.removeItem('safetube_channel_name');
+            localStorage.removeItem('safetube_user_name');
             window.location.href = 'dashboard.html';
         });
 

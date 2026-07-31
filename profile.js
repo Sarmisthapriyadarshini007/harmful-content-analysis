@@ -79,6 +79,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 profileAvatarLarge.style.color = 'white';
             }
         }
+    } else {
+        // Fallback if no user name is set
+        let fallbackName = "User";
+        let initials = "U";
+        const savedEmail = localStorage.getItem('safetube_user_email');
+        if (savedEmail) {
+            const nameFromEmail = savedEmail.split('@')[0];
+            fallbackName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
+            initials = fallbackName.charAt(0).toUpperCase();
+        }
+        
+        const nameSpans = document.querySelectorAll('.profile-dropdown span');
+        const avatars = document.querySelectorAll('.profile-dropdown .avatar');
+        
+        nameSpans.forEach(span => {
+            span.innerText = fallbackName;
+        });
+        
+        avatars.forEach(avatar => {
+            avatar.innerText = initials;
+            avatar.style.backgroundImage = 'none';
+            avatar.style.color = 'white';
+        });
+
+        const profileInput = document.getElementById('profileFullNameInput');
+        if(profileInput) {
+            profileInput.value = fallbackName;
+        }
+
+        const profileAvatarLarge = document.getElementById('profileAvatarLarge');
+        if(profileAvatarLarge) {
+            const textNode = Array.from(profileAvatarLarge.childNodes).find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0);
+            if (textNode) {
+                textNode.textContent = initials;
+            } else {
+                profileAvatarLarge.innerText = initials;
+            }
+            profileAvatarLarge.style.backgroundImage = 'linear-gradient(135deg, var(--primary), var(--accent))';
+            profileAvatarLarge.style.color = 'white';
+        }
+        
+        localStorage.setItem('safetube_user_name', fallbackName);
     }
 
     const savedEmail = localStorage.getItem('safetube_user_email');

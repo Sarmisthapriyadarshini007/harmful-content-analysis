@@ -485,4 +485,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
+    // Clear user session data on logout so new login acts as a new user
+    const logoutLinks = document.querySelectorAll('a[href="login.html"]');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            localStorage.removeItem('safetube_channel_name');
+            localStorage.removeItem('safetube_user_name');
+            // We intentionally don't clear safetube_remembered_email
+        });
+    });
 });

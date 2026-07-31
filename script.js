@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
-            navbar.style.background = 'rgba(15, 23, 42, 0.95)'; // dark mode solid
+            navbar.style.background = 'rgba(15, 23, 42, 0.6)'; // higher transparency for glass effect
             navbar.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.4)';
         } else {
             navbar.style.background = 'rgba(255, 255, 255, 0.05)'; // dark mode glass

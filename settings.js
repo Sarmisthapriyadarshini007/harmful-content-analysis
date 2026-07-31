@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. Basic Save Button Animation
-    const saveBtns = document.querySelectorAll('.btn-save');
+    const saveBtns = document.querySelectorAll('.btn-save:not(#updatePasswordBtn)');
     saveBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const originalText = btn.innerText;
@@ -76,4 +76,53 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 800);
         });
     });
+
+    // 5. Change Password Logic
+    const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+    if (updatePasswordBtn) {
+        updatePasswordBtn.addEventListener('click', (e) => {
+            const currentPwd = document.getElementById('currentPasswordInput').value;
+            const newPwd = document.getElementById('newPasswordInput').value;
+            const confirmPwd = document.getElementById('confirmPasswordInput').value;
+
+            // Stop the standard "saving" animation if validation fails
+            e.stopImmediatePropagation();
+
+            if (!currentPwd || !newPwd || !confirmPwd) {
+                alert('Please fill in all password fields.');
+                return;
+            }
+
+            if (newPwd !== confirmPwd) {
+                alert('New password and confirm password do not match.');
+                return;
+            }
+
+            // Get stored password or use a default one for simulation
+            const storedPwd = localStorage.getItem('safetube_user_password') || 'password123';
+            
+            if (currentPwd !== storedPwd) {
+                alert('Incorrect current password.');
+                return;
+            }
+
+            // Save new password
+            localStorage.setItem('safetube_user_password', newPwd);
+
+            // Play success animation
+            const originalText = updatePasswordBtn.innerText;
+            updatePasswordBtn.innerText = 'Saved!';
+            updatePasswordBtn.style.background = '#10B981';
+            
+            // Clear inputs
+            document.getElementById('currentPasswordInput').value = '';
+            document.getElementById('newPasswordInput').value = '';
+            document.getElementById('confirmPasswordInput').value = '';
+
+            setTimeout(() => {
+                updatePasswordBtn.innerText = originalText;
+                updatePasswordBtn.style.background = 'var(--primary)';
+            }, 2000);
+        });
+    }
 });

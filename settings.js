@@ -98,10 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Get stored password or use a default one for simulation
-            const storedPwd = localStorage.getItem('safetube_user_password') || 'password123';
+            // Get stored password
+            const storedPwd = localStorage.getItem('safetube_user_password');
             
-            if (currentPwd !== storedPwd) {
+            // Only check current password if they have actually saved one before
+            if (storedPwd && currentPwd !== storedPwd) {
                 alert('Incorrect current password.');
                 return;
             }
